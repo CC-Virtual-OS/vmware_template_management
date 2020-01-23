@@ -1,31 +1,25 @@
 ---
 - name: Find folder path of an existing virtual machine
-  hosts: localhost
+  hosts: linux
   gather_facts: False
   vars:
     ansible_python_interpreter: "/usr/bin/env python3"
-    vcenter_server: "vcpodarea3.lottomatica.net"
-    vcenter_user: "virtosadmin"
-    vcenter_pass: "Password10"
-    vcenter_datacenter: "FARM-AREA3"
-    template_name: "RH76-master"
-    bkp_template_name: "RH76-master-bkp"
-    vm_on_name: "RC-RH76"
-    cluster_name: "CLUSTER AREA3"
-    datastore_name: "CROSS_MASTER_XtremIO-I_252"
+    bkp_template_name: "{{ inventory_hostname }}-bkp"
+
   tasks:
-    - name: Get Template "{{ template_name }}" uuid
-      vmware_guest_facts:
+    - name: Get Template "{{ inventory_hostname }}" uuid
+      vmware_guest_info:
         hostname: "{{ vcenter_server }}"
         username: "{{ vcenter_user }}"
         password: "{{ vcenter_pass }}"
         validate_certs: False
         datacenter: "{{ vcenter_datacenter }}"
         folder: "/{{ vcenter_datacenter }}/vm"
-        name: "{{ template_name }}"
+        name: "{{ inventory_hostname }}"
+      delegate_to: localhost
       register: template_facts
 
-    - name: Rename "{{ template_name }}" to "{{ bkp_template_name }}"
+    - name: Rename "{{ inventory_hostname }}" to "{{ bkp_template_name }}"
       vmware_guest:
         hostname: "{{ vcenter_server }}"
         username: "{{ vcenter_user }}"
@@ -35,6 +29,7 @@
         cluster: "{{ cluster_name }}"
         uuid: "{{ template_facts.instance.hw_product_uuid }}"
         name: "{{ bkp_template_name }}"
+      delegate_to: localhost
 
     - name: Cloning VM Template 
       vmware_guest:
@@ -42,7 +37,7 @@
         username: "{{ vcenter_user }}"
         password: "{{ vcenter_pass }}" 
         validate_certs: False
-        name: "{{ template_name }}"
+        name: "{{ inventory_hostname }}"
         template: "{{ vm_on_name }}" 
         datacenter: "{{ vcenter_datacenter }}"
         folder: "{{ template_facts.instance.hw_folder }}"
@@ -51,14 +46,6 @@
         state: poweredoff
       delegate_to: localhost
       register: vm_facts 
-
-
-    - set_fact:
-        vm_networks: "{{ vm_facts.instance.keys() | select('match', '.*eth.*') | list }}"
-
-    - debug:
-        msg: "{{ vm_facts.instance[item].macaddress }}"
-      loop: "{{ vm_networks }}"
        
     - name: remove all NICs from new template 
       vmware_guest_network:
@@ -67,24 +54,24 @@
         password: "{{ vcenter_pass }}"
         datacenter: "{{ vcenter_datacenter }}"
         validate_certs: no
-        name: "{{ template_name }}"
+        name: "{{ inventory_hostname }}"
         cluster: "{{ cluster_name }}"
         gather_network_info: false
         networks:
          - state: absent
-           mac: "{{ vm_facts.instance[item].macaddress }}"
+           device_type: "vmxnet3"
       delegate_to: localhost
-      loop: "{{ vm_networks }}"
-    
-    - name: Power On the new template "{{ template_name }}"
+
+    - name: Power On the new template "{{ inventory_hostname }}"
       vmware_guest:
         hostname: "{{ vcenter_server }}"
         username: "{{ vcenter_user }}"
         password: "{{ vcenter_pass }}"
         datacenter: "{{ vcenter_datacenter }}"
         validate_certs: no
-        name: "{{ template_name }}"
+        name: "{{ inventory_hostname }}"
         state: poweredon
       delegate_to: localhost
+      
 
 
