@@ -1,0 +1,1 @@
+# vmware_template_management
