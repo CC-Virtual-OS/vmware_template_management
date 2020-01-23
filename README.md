@@ -1,2 +1,2 @@
 # vmware_template_management
-# playbook to manage templates
+# playbook to manage CC virtual OS templates
