@@ -1,0 +1,125 @@
+---
+- name: Find folder path of an existing virtual machine
+  hosts: localhost
+  gather_facts: False
+  #vars_files:
+  #  - vcenter_vars.yml
+  vars:
+    ansible_python_interpreter: "/usr/bin/env python3"
+    vcenter_server: "vcpod-ita-dcs2.lottomatica.net"
+    vcenter_user: "virtosadmin"
+    vcenter_pass: "Password10"
+    # template_name: "RH76-master"
+    # bkp_template_name: "RH76-master-bkp"
+    # vm_on_name: "RC-RH76"
+    # cluster_name: "CLUSTER AREA3"
+    vmname_list: /root/ansible/vmware/vmlist
+  tasks:
+
+    - name: Authenticating against the Vcenter
+      uri:
+        url: "https://{{ vcenter_server }}/rest/com/vmware/cis/session"
+        validate_certs: no
+        method: POST
+        user: "{{ vcenter_user }}"
+        password: "{{ vcenter_pass }}"
+        force_basic_auth: yes
+        return_content: yes
+        status_code: 200
+      register: ses
+
+    - name: Get Datacenter Name by rest API
+      uri:
+        url: "https://{{ vcenter_server }}/rest/vcenter/datacenter"
+        validate_certs: no
+        method: GET
+        return_content: yes
+        status_code: 200
+        headers:
+          Cookie: "{{ ses.set_cookie }}"
+      register: datacenter
+
+    - set_fact:
+        vcenter_datacenter: "{{ datacenter.json.value[0].name }}"
+
+    - name: Recupero informazioni/facts delle vm in una lista 
+      vmware_guest_facts:
+        hostname: "{{ vcenter_server }}"
+        username: "{{ vcenter_user }}"
+        password: "{{ vcenter_pass }}"
+        validate_certs: False
+        datacenter: "{{ vcenter_datacenter }}"
+        folder: "/{{ vcenter_datacenter }}/vm"
+        name: "{{ item }}"
+      with_lines :  cat "{{vmname_list}}" 
+      register: template_facts
+
+    - debug:
+        msg: "{{ template_facts | json_query('results[*].instance.hw_power_status') }}"
+
+    # - name: Set the state of a virtual machine to poweroff
+    #   vmware_guest_powerstate:
+    #     hostname: "{{ vcenter_server }}"
+    #     username: "{{ vcenter_user }}"
+    #     password: "{{ vcenter_pass }}"
+    #     validate_certs: no
+    #     folder: "/{{ vcenter_datacenter }}/vm"
+    #     name: "{{ item }}"
+    #     state: powered-off
+    #   with_lines :  cat "{{vmname_list}}" 
+    #   register: deploy
+
+    - debug: 
+        msg: "{{ deploy }}"
+
+#    - set_fact:
+       # prova: "{{ template_facts | json_query('instance.hw_file%s[*]') }}"
+#        prova: "{{ template_facts.instance.keys() | select('match', 'hw_f.*') | list }}"
+
+#    - debug:
+#        msg: "valgo {{ prova }}"
+
+#    - name: Rename "{{ template_name }}" to "{{ bkp_template_name }}"
+#      vmware_guest:
+#        hostname: "{{ vcenter_server }}"
+#        username: "{{ vcenter_user }}"
+#        password: "{{ vcenter_pass }}"
+#        datacenter: "{{ vcenter_datacenter }}"
+#        validate_certs: False
+#        cluster: "{{ cluster_name }}"
+#        uuid: "{{ template_facts.instance.hw_product_uuid }}"
+#        name: "{{ bkp_template_name }}"
+
+#    - name: Cloning VM Template 
+#      vmware_guest:
+#        hostname: "{{ vcenter_server }}" 
+#        username: "{{ vcenter_user }}"
+#        password: "{{ vcenter_pass }}" 
+#        validate_certs: False
+#        name: "{{ template_name }}"
+#        template: "{{ vm_on_name }}" 
+#        datacenter: "{{ vcenter_datacenter }}"
+#        folder: "{{ template_facts.instance.hw_folder }}"
+#        cluster: "{{ cluster_name }}"
+#        state: poweredoff
+#      delegate_to: localhost
+#      register: vm_facts 
+
+#    - name: Change network adapter settings of virtual machine using MoID
+#      vmware_guest_network:
+#        hostname: "{{ vcenter_hostname }}"
+#    username: "{{ vcenter_username }}"
+#    password: "{{ vcenter_password }}"
+#    datacenter: "{{ datacenter_name }}"
+#    validate_certs: no
+#    moid: vm-42
+#    gather_network_info: false
+#    networks:
+#      - state: absent
+#        mac: "00:50:56:44:55:77"
+#  delegate_to: localhost
+
+
+#    - debug:
+#        msg: "{{ vm_facts }}"
+
