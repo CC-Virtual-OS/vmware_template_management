@@ -1,15 +1,15 @@
 ---
-- name: Find folder path of an existing virtual machine
+- name: Playbook di Test 
   hosts: linux
   # hosts: localhost
   gather_facts: False
   #vars_files:
   #  - vcenter_vars.yml
   vars:
-    ansible_python_interpreter: "/usr/bin/env python3"
-    vcenter_server: "vcpodarea3.lottomatica.net"
-    vcenter_user: "virtosadmin"
-    vcenter_pass: "Password10"
+    # ansible_python_interpreter: "/usr/bin/env python3"
+    # vcenter_server: "10.4.9.130"
+    # vcenter_user: "virtosadmin"
+    # vcenter_pass: "Password10"
     # vcenter_datacenter: "FARM-AREA3"
     # template_name: "RH76-master"
     # bkp_template_name: "RH76-master-bkp"
@@ -44,70 +44,18 @@
     # - set_fact:
     #     vcenter_datacenter: "{{ datacenter.json.value[0].name }}"
 
-    # ESEMPIO CICLO VM CONTENUTE IN UN FILE (WITH_LINES)
 
-    # - name: Recupero informazioni/facts delle vm in una lista 
-    #   vmware_guest_facts:
-    #     hostname: "{{ vcenter_server }}"
-    #     username: "{{ vcenter_user }}"
-    #     password: "{{ vcenter_pass }}"
-    #     validate_certs: False
-    #     datacenter: "{{ vcenter_datacenter }}"
-    #     folder: "/{{ vcenter_datacenter }}/vm"
-    #     name: "{{ item }}"
-    #   with_lines :  cat "{{vmname_list}}" 
-    #   register: template_facts
 
     # - debug:
     #     msg: "{{ template_facts | json_query('results[*].instance.hw_power_status') }}"
-
-    # - name: Set the state of a virtual machine to poweroff
-    #   vmware_guest_powerstate:
-    #     hostname: "{{ vcenter_server }}"
-    #     username: "{{ vcenter_user }}"
-    #     password: "{{ vcenter_pass }}"
-    #     validate_certs: no
-    #     folder: "/{{ vcenter_datacenter }}/vm"
-    #     name: "{{ item }}"
-    #     state: powered-off
-    #   with_lines :  cat "{{vmname_list}}" 
-    #   register: deploy
-
-    # - debug: 
-    #     msg: "{{ deploy }}"
 
 #    - set_fact:
        # prova: "{{ template_facts | json_query('instance.hw_file%s[*]') }}"
 #        prova: "{{ template_facts.instance.keys() | select('match', 'hw_f.*') | list }}"
 
 #    - debug:
-#        msg: "valgo {{ prova }}"
+#        msg: "{{ prova }}"
 
-#    - name: Rename "{{ template_name }}" to "{{ bkp_template_name }}"
-#      vmware_guest:
-#        hostname: "{{ vcenter_server }}"
-#        username: "{{ vcenter_user }}"
-#        password: "{{ vcenter_pass }}"
-#        datacenter: "{{ vcenter_datacenter }}"
-#        validate_certs: False
-#        cluster: "{{ cluster_name }}"
-#        uuid: "{{ template_facts.instance.hw_product_uuid }}"
-#        name: "{{ bkp_template_name }}"
-
-#    - name: Cloning VM Template 
-#      vmware_guest:
-#        hostname: "{{ vcenter_server }}" 
-#        username: "{{ vcenter_user }}"
-#        password: "{{ vcenter_pass }}" 
-#        validate_certs: False
-#        name: "{{ template_name }}"
-#        template: "{{ vm_on_name }}" 
-#        datacenter: "{{ vcenter_datacenter }}"
-#        folder: "{{ template_facts.instance.hw_folder }}"
-#        cluster: "{{ cluster_name }}"
-#        state: poweredoff
-#      delegate_to: localhost
-#      register: vm_facts 
 
     # - set_fact:
     #     vm_networks: "{{ vm_facts.instance.keys() | select('match', '.*eth.*') | list }}"
@@ -116,21 +64,46 @@
     #     msg: "{{ vm_facts.instance[item].macaddress }}"
     #   loop: "{{ vm_networks }}"
 
-   - name: Change network adapter settings of virtual machine using MoID
-     vmware_guest_network:
+
+  #  - name: Recupero informazioni/facts delle vm in una lista 
+  #    vmware_guest_info:
+  #      hostname: "{{ vcenter_server }}"
+  #      username: "{{ vcenter_user }}"
+  #      password: "{{ vcenter_pass }}"
+  #      validate_certs: False
+  #      datacenter: "{{ vcenter_datacenter }}"
+  #      folder: "/{{ vcenter_datacenter }}/vm"
+  #      name: "{{ inventory_hostname }}"
+  #    register: template_facts
+  #    delegate_to: localhost
+
+   - name: Find "{{ inventory_hostname }}" 's Folder 
+     vmware_guest_find:
        hostname: "{{ vcenter_server }}"
        username: "{{ vcenter_user }}"
        password: "{{ vcenter_pass }}"
-       datacenter: "{{ vcenter_datacenter }}"
        validate_certs: no
        name: "{{ inventory_hostname }}"
-       gather_network_info: false
-       networks:
-         - state: absent
-           device_type: "vmxnet3"
      delegate_to: localhost
+     register: vm_folder
 
+   - name: Add Connection Plugin vmware
+     add_host:
+       name: my_vmware
+       ansible_connection: vmware_tools
+       ansible_vmware_host: "{{ vcenter_server }}"
+       ansible_vmware_user: "{{ vcenter_user }}"
+       ansible_vmware_password: "{{ vcenter_pass }}"
+       ansible_vmware_validate_certs: no
+       ansible_vmware_guest_path: "{{ vm_folder.folders[0] }}/{{ inventory_hostname }}"
+       ansible_vmware_tools_user: root
+       ansible_vmware_tools_password: C4mb14m1!
+
+   - name: Example command via vmtools
+     delegate_to: my_vmware
+     command: ls -l 
+     register: cmdout
 
    - debug:
-       msg: "{{ vm_on_name }} - {{ vcenter_datacenter }}"
+       msg: "{{ cmdout }}"
 

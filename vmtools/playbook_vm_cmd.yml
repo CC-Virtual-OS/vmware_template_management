@@ -1,25 +1,21 @@
 ---
 - name: Test VMware Tools Connection Plugin for Linux
-  hosts: gntn
+  hosts: linux
   gather_facts: False
   vars:
     ansible_connection: vmware_tools
-
-    ansible_vmware_host: 172.19.167.170
-    ansible_vmware_user: administrator@vsphere.local
-    ansible_vmware_password: F0rz4CR!
-    ansible_vmware_validate_certs: no  # default is yes
-
-#   vCenter Connection VM Path Example
-#    ansible_vmware_guest_path: /FARM-AREA3/vm/Template_MASTER/RHEL/RHEL7/{{ inventory_hostname }}
-    ansible_vmware_guest_path: /DCS2_ITA/vm/DELIVERY_AUTOMATION/GNTN/DEVELOPMENT - GNTN/{{ inventory_hostname }}
+    ansible_vmware_host: "{{ vcenter_server }}"
+    ansible_vmware_user: "{{ vcenter_user }}"
+    ansible_vmware_password: "{{ vcenter_pass }}"
+    ansible_vmware_validate_certs: no
+    ansible_vmware_guest_path: /FARM-AREA3/vm/{{ inventory_hostname }}
     ansible_vmware_tools_user: root
     ansible_vmware_tools_password: C4mb14m1!
 
   tasks:
 
-
-    - command: ls -l 
+    - name: Example command via vmtools
+      command: ls -l 
       register: cmdout
 
     - debug:
