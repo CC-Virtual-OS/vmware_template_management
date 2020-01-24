@@ -97,6 +97,7 @@
       delegate_to: localhost
       register: facts
 
+### Connessione plugin vmware e esecuzione comandi sulla VM tramite vmware_tools
     - name: Add Connection Plugin vmware
       add_host:
         name: my_vmware
@@ -116,6 +117,32 @@
 
     - debug:
         msg: "{{ cmdout }}"
+
+### Spengo la vm 
+    - name: Poweroff vm
+      vmware_guest:
+        hostname: "{{ vcenter_server }}"
+        username: "{{ vcenter_user }}"
+        password: "{{ vcenter_pass }}"
+        datacenter: "{{ vcenter_datacenter }}"
+        validate_certs: no
+        name: "{{ inventory_hostname }}"
+        state: poweredoff
+      delegate_to: localhost
+
+### converto la vm in template e scrivo le note
+    - name:  convert to template
+      vmware_guest:
+        hostname: "{{ vcenter_server }}"
+        username: "{{ vcenter_user }}"
+        password: "{{ vcenter_pass }}"
+        datacenter: "{{ vcenter_datacenter }}"
+        validate_certs: no
+        name: "{{ inventory_hostname }}"
+        is_template: true
+        annotation: "{{ note_update }} \n {{ template_facts.instance.annotation }}"
+      delegate_to: localhost
+
       
 
 

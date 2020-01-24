@@ -65,45 +65,63 @@
     #   loop: "{{ vm_networks }}"
 
 
-  #  - name: Recupero informazioni/facts delle vm in una lista 
-  #    vmware_guest_info:
-  #      hostname: "{{ vcenter_server }}"
-  #      username: "{{ vcenter_user }}"
-  #      password: "{{ vcenter_pass }}"
-  #      validate_certs: False
-  #      datacenter: "{{ vcenter_datacenter }}"
-  #      folder: "/{{ vcenter_datacenter }}/vm"
-  #      name: "{{ inventory_hostname }}"
-  #    register: template_facts
-  #    delegate_to: localhost
-
-   - name: Find "{{ inventory_hostname }}" 's Folder 
-     vmware_guest_find:
+   - name: Recupero informazioni/facts delle vm in una lista 
+     vmware_guest_info:
        hostname: "{{ vcenter_server }}"
        username: "{{ vcenter_user }}"
        password: "{{ vcenter_pass }}"
-       validate_certs: no
+       validate_certs: False
+       datacenter: "{{ vcenter_datacenter }}"
+       folder: "/{{ vcenter_datacenter }}/vm"
        name: "{{ inventory_hostname }}"
+     register: template_facts
      delegate_to: localhost
-     register: vm_folder
-
-   - name: Add Connection Plugin vmware
-     add_host:
-       name: my_vmware
-       ansible_connection: vmware_tools
-       ansible_vmware_host: "{{ vcenter_server }}"
-       ansible_vmware_user: "{{ vcenter_user }}"
-       ansible_vmware_password: "{{ vcenter_pass }}"
-       ansible_vmware_validate_certs: no
-       ansible_vmware_guest_path: "{{ vm_folder.folders[0] }}/{{ inventory_hostname }}"
-       ansible_vmware_tools_user: root
-       ansible_vmware_tools_password: C4mb14m1!
-
-   - name: Example command via vmtools
-     delegate_to: my_vmware
-     command: ls -l 
-     register: cmdout
 
    - debug:
-       msg: "{{ cmdout }}"
+       msg: "{{ template_facts }}"
+
+
+
+  #  - name: Find "{{ inventory_hostname }}" 's Folder 
+  #    vmware_guest_find:
+  #      hostname: "{{ vcenter_server }}"
+  #      username: "{{ vcenter_user }}"
+  #      password: "{{ vcenter_pass }}"
+  #      validate_certs: no
+  #      name: "{{ inventory_hostname }}"
+  #    delegate_to: localhost
+  #    register: vm_folder
+
+
+
+  #  - name: Add Connection Plugin vmware
+  #    add_host:
+  #      name: my_vmware
+  #      ansible_connection: vmware_tools
+  #      ansible_vmware_host: "{{ vcenter_server }}"
+  #      ansible_vmware_user: "{{ vcenter_user }}"
+  #      ansible_vmware_password: "{{ vcenter_pass }}"
+  #      ansible_vmware_validate_certs: no
+  #      ansible_vmware_guest_path: "{{ vm_folder.folders[0] }}/{{ inventory_hostname }}"
+  #      ansible_vmware_tools_user: root
+  #      ansible_vmware_tools_password: C4mb14m1!
+
+  #  - name: Example command via vmtools
+  #    delegate_to: my_vmware
+  #    command: ls -l 
+  #    register: cmdout
+
+  #  - debug:
+  #      msg: "{{ cmdout }}"
+
+   - name:  test annotation
+     vmware_guest:
+       hostname: "{{ vcenter_server }}"
+       username: "{{ vcenter_user }}"
+       password: "{{ vcenter_pass }}"
+       datacenter: "{{ vcenter_datacenter }}"
+       validate_certs: no
+       name: "{{ inventory_hostname }}"
+       annotation: "{{ note_update }} \n {{ template_facts.instance.annotation }}"
+     delegate_to: localhost
 
