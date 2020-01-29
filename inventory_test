@@ -1,5 +1,6 @@
 [linux]
 RP-CAPSULE-PROD-ITA
+WC-2K19-X64-DC
 
 [linux:vars]
 vcenter_server="vcpodarea3"

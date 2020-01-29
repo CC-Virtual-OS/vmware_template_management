@@ -77,11 +77,12 @@
      register: template_facts
      delegate_to: localhost
 
+   - set_fact:
+       vm_folder: "{{ template_facts.instance.hw_folder }}"
+       guest_os: "{{ template_facts.instance.hw_guest_full_name }}"
+
    - debug:
-       msg: "{{ template_facts }}"
-
-
-
+       msg: "{{ guest_os }}"
   #  - name: Find "{{ inventory_hostname }}" 's Folder 
   #    vmware_guest_find:
   #      hostname: "{{ vcenter_server }}"
@@ -91,6 +92,14 @@
   #      name: "{{ inventory_hostname }}"
   #    delegate_to: localhost
   #    register: vm_folder
+   
+   - include_role:
+        name: clean_linux
+     when: guest_os is search("Red Hat")
+
+   - include_role:
+        name: clean_windows
+     when: guest_os is search("Windows")
 
 
 
@@ -114,14 +123,14 @@
   #  - debug:
   #      msg: "{{ cmdout }}"
 
-   - name:  test annotation
-     vmware_guest:
-       hostname: "{{ vcenter_server }}"
-       username: "{{ vcenter_user }}"
-       password: "{{ vcenter_pass }}"
-       datacenter: "{{ vcenter_datacenter }}"
-       validate_certs: no
-       name: "{{ inventory_hostname }}"
-       annotation: "{{ note_update }} \n {{ template_facts.instance.annotation }}"
-     delegate_to: localhost
+  #  - name:  test annotation
+  #    vmware_guest:
+  #      hostname: "{{ vcenter_server }}"
+  #      username: "{{ vcenter_user }}"
+  #      password: "{{ vcenter_pass }}"
+  #      datacenter: "{{ vcenter_datacenter }}"
+  #      validate_certs: no
+  #      name: "{{ inventory_hostname }}"
+  #      annotation: "{{ note_update }} \n {{ template_facts.instance.annotation }}"
+  #    delegate_to: localhost
 
