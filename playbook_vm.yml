@@ -7,18 +7,21 @@
     bkp_template_name: "{{ inventory_hostname }}-bkp"
 
   tasks:
-    - name: Find Template Folder 
-      vmware_guest_find:
+    - name: Recupero informazioni/facts delle vm 
+      vmware_guest_info:
         hostname: "{{ vcenter_server }}"
         username: "{{ vcenter_user }}"
         password: "{{ vcenter_pass }}"
-        validate_certs: no
+        validate_certs: False
+        datacenter: "{{ vcenter_datacenter }}"
+        folder: "/{{ vcenter_datacenter }}/vm"
         name: "{{ inventory_hostname }}"
+      register: template_facts
       delegate_to: localhost
-      register: vm_folder
 
     - set_fact:
-        folder: "{{ vm_folder.folders[0] }}"
+        folder: "{{ template_facts.instance.hw_folder }}"
+        guest_os: "{{ template_facts.instance.hw_guest_full_name }}"
 
     - name: Get Template Facts
       vmware_guest_info:
@@ -97,26 +100,34 @@
       delegate_to: localhost
       register: facts
 
+    - include_role:
+         name: clean_linux
+      when: guest_os is search("Red Hat")
+
+    - include_role:
+         name: clean_windows
+      when: guest_os is search("Windows")
+
 ### Connessione plugin vmware e esecuzione comandi sulla VM tramite vmware_tools
-    - name: Add Connection Plugin vmware
-      add_host:
-        name: my_vmware
-        ansible_connection: vmware_tools
-        ansible_vmware_host: "{{ vcenter_server }}"
-        ansible_vmware_user: "{{ vcenter_user }}"
-        ansible_vmware_password: "{{ vcenter_pass }}"
-        ansible_vmware_validate_certs: no
-        ansible_vmware_guest_path: "{{ folder }}/{{ inventory_hostname }}"
-        ansible_vmware_tools_user: root
-        ansible_vmware_tools_password: C4mb14m1!
+    # - name: Add Connection Plugin vmware
+    #   add_host:
+    #     name: my_vmware
+    #     ansible_connection: vmware_tools
+    #     ansible_vmware_host: "{{ vcenter_server }}"
+    #     ansible_vmware_user: "{{ vcenter_user }}"
+    #     ansible_vmware_password: "{{ vcenter_pass }}"
+    #     ansible_vmware_validate_certs: no
+    #     ansible_vmware_guest_path: "{{ folder }}/{{ inventory_hostname }}"
+    #     ansible_vmware_tools_user: root
+    #     ansible_vmware_tools_password: C4mb14m1!
 
-    - name: command via vmtools
-      delegate_to: my_vmware
-      command: ls -l 
-      register: cmdout
+    # - name: command via vmtools
+    #   delegate_to: my_vmware
+    #   command: ls -l 
+    #   register: cmdout
 
-    - debug:
-        msg: "{{ cmdout }}"
+    # - debug:
+    #     msg: "{{ cmdout }}"
 
 ### Spengo la vm 
     - name: Poweroff vm
