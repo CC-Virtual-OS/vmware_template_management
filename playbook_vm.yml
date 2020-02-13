@@ -4,7 +4,7 @@
   gather_facts: False
   vars:
     # ansible_python_interpreter: "/usr/bin/env python3"
-    bkp_template_name: "{{ inventory_hostname }}-bkp"
+    bkp_template_name: "{{ inventory_hostname }}-{{ ansible_date_time.iso8601 }}"
 
   tasks:
     - name: Recupero informazioni/facts delle vm 
@@ -102,7 +102,7 @@
 
     - include_role:
          name: clean_linux
-      when: guest_os is search("Red Hat")
+      when: guest_os is search("Red Hat") or guest_os is search("CentOS")
 
     - include_role:
          name: clean_windows
