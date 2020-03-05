@@ -3,7 +3,7 @@ ansible_vmware_host: "{{ vcenter_server }}"
 ansible_vmware_user: "{{ vcenter_user }}"
 ansible_vmware_password: "{{ vcenter_pass }}"
 ansible_vmware_validate_certs: no
-ansible_vmware_guest_path: "{{ folder }}/{{ inventory_hostname }}"
+ansible_vmware_guest_path: "{{ folder }}/{{ new_name }}"
 ansible_vmware_tools_user: root
 ansible_vmware_tools_password: C4mb14m1!
 ansible_python_interpreter: auto_silent

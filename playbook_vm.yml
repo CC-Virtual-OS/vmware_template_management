@@ -4,7 +4,7 @@
   gather_facts: False
   vars:
     # ansible_python_interpreter: "/usr/bin/env python3"
-    bkp_template_name: "{{ inventory_hostname }}-{{ ansible_date_time.iso8601 }}"
+    bkp_template_name: "{{ inventory_hostname }}-13022020-11-18"
 
   tasks:
     - name: Recupero informazioni/facts delle vm 
@@ -47,13 +47,14 @@
         name: "{{ bkp_template_name }}"
       delegate_to: localhost
 
+
     - name: Cloning VM Template 
       vmware_guest:
         hostname: "{{ vcenter_server }}" 
         username: "{{ vcenter_user }}"
         password: "{{ vcenter_pass }}" 
         validate_certs: False
-        name: "{{ inventory_hostname }}"
+        name: "{{ new_name }}"
         template: "{{ vm_on_name }}" 
         datacenter: "{{ vcenter_datacenter }}"
         folder: "{{ folder }}"
@@ -70,7 +71,7 @@
         password: "{{ vcenter_pass }}"
         datacenter: "{{ vcenter_datacenter }}"
         validate_certs: no
-        name: "{{ inventory_hostname }}"
+        name: "{{ new_name }}"
         cluster: "{{ cluster_name }}"
         gather_network_info: false
         networks:
@@ -85,7 +86,7 @@
         password: "{{ vcenter_pass }}"
         datacenter: "{{ vcenter_datacenter }}"
         validate_certs: no
-        name: "{{ inventory_hostname }}"
+        name: "{{ new_name }}"
         state: poweredon
       delegate_to: localhost
 
@@ -95,7 +96,7 @@
         username: "{{ vcenter_user }}"
         password: "{{ vcenter_pass }}"
         validate_certs: no
-        name: "{{ inventory_hostname }}"
+        name: "{{ new_name }}"
         folder: "{{ folder }}"
       delegate_to: localhost
       register: facts
@@ -137,7 +138,7 @@
         password: "{{ vcenter_pass }}"
         datacenter: "{{ vcenter_datacenter }}"
         validate_certs: no
-        name: "{{ inventory_hostname }}"
+        name: "{{ new_name }}"
         state: poweredoff
       delegate_to: localhost
 
@@ -149,7 +150,7 @@
         password: "{{ vcenter_pass }}"
         datacenter: "{{ vcenter_datacenter }}"
         validate_certs: no
-        name: "{{ inventory_hostname }}"
+        name: "{{ new_name }}"
         is_template: true
         annotation: "{{ note_update }} \n {{ template_facts.instance.annotation }}"
       delegate_to: localhost

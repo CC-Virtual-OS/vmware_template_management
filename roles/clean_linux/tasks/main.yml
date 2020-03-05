@@ -1,15 +1,6 @@
-# - name: Add Connection Plugin vmware
-#   add_host:
-#     name: my_vmware
-#     ansible_connection: vmware_tools
-#     ansible_vmware_host: "{{ vcenter_server }}"
-#     ansible_vmware_user: "{{ vcenter_user }}"
-#     ansible_vmware_password: "{{ vcenter_pass }}"
-#     ansible_vmware_validate_certs: no
-#     ansible_vmware_guest_path: "{{ folder }}/{{ inventory_hostname }}"
-#     ansible_vmware_tools_user: root
-#     ansible_vmware_tools_password: C4mb14m1!
-
+##################################################
+## vars defined on roles/clean_linux/vars/main.yml
+##################################################
 - name: Blanking /etc/hosts file
   shell: echo "127.0.0.1 localhost localhost.localdomain localhost4 localhost4.localdomain4" > /etc/hosts
 
@@ -19,10 +10,6 @@
     paths: /etc/sysconfig/network-scripts
     patterns: route*
   register: routes_to_delete
-
-- name: list routes to delete
-  debug: 
-    msg: "{{ routes_to_delete }}"
 
 - name: Removing any existing route file
   file:
@@ -130,4 +117,4 @@
 
 - name: Setting Hostname
   hostname:
-    name: "{{ inventory_hostname }}"
+    name: "{{ new_name }}"
