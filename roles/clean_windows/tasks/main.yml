@@ -1,18 +1,17 @@
-- name: Add Connection Plugin vmware
-  add_host:
-    name: my_vmware
-    ansible_connection: vmware_tools
-    ansible_vmware_host: "{{ vcenter_server }}"
-    ansible_vmware_user: "{{ vcenter_user }}"
-    ansible_vmware_password: "{{ vcenter_pass }}"
-    ansible_vmware_validate_certs: no
-    ansible_vmware_guest_path: "{{ folder }}/{{ inventory_hostname }}"
-    ansible_vmware_tools_user: administrator
-    ansible_vmware_tools_password: C4mb14m1!
-    ansible_shell_type: powershell
+# - name: Add Connection Plugin vmware
+#   add_host:
+#     name: my_vmware
+#     ansible_connection: vmware_tools
+#     ansible_vmware_host: "{{ vcenter_server }}"
+#     ansible_vmware_user: "{{ vcenter_user }}"
+#     ansible_vmware_password: "{{ vcenter_pass }}"
+#     ansible_vmware_validate_certs: no
+#     ansible_vmware_guest_path: "{{ folder }}/{{ inventory_hostname }}"
+#     ansible_vmware_tools_user: administrator
+#     ansible_vmware_tools_password: C4mb14m1!
+#     ansible_shell_type: powershell
 
 - name: Example command via vmtools
-  delegate_to: my_vmware
   win_command: whoami 
   register: cmdout
 

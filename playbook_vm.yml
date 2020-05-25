@@ -4,7 +4,7 @@
   gather_facts: False
   vars:
     # ansible_python_interpreter: "/usr/bin/env python3"
-    bkp_template_name: "{{ inventory_hostname }}-13022020-11-18"
+    bkp_template_name: "{{ inventory_hostname }}-16032020-11-18"
 
   tasks:
     - name: Recupero informazioni/facts delle vm 
@@ -23,17 +23,17 @@
         folder: "{{ template_facts.instance.hw_folder }}"
         guest_os: "{{ template_facts.instance.hw_guest_full_name }}"
 
-    - name: Get Template Facts
-      vmware_guest_info:
-        hostname: "{{ vcenter_server }}"
-        username: "{{ vcenter_user }}"
-        password: "{{ vcenter_pass }}"
-        validate_certs: False
-        datacenter: "{{ vcenter_datacenter }}"
-        folder: "{{ folder }}"
-        name: "{{ inventory_hostname }}"
-      delegate_to: localhost
-      register: template_facts
+    # - name: Get Template Facts
+    #   vmware_guest_info:
+    #     hostname: "{{ vcenter_server }}"
+    #     username: "{{ vcenter_user }}"
+    #     password: "{{ vcenter_pass }}"
+    #     validate_certs: False
+    #     datacenter: "{{ vcenter_datacenter }}"
+    #     folder: "{{ folder }}"
+    #     name: "{{ inventory_hostname }}"
+    #   delegate_to: localhost
+    #   register: template_facts
 
     - name: Rename "{{ inventory_hostname }}" to "{{ bkp_template_name }}"
       vmware_guest:
@@ -101,6 +101,29 @@
       delegate_to: localhost
       register: facts
 
+    - name: pause 30 seconds
+      pause:
+        seconds: 30
+
+    - name: Recupero informazioni della vm 
+      vmware_guest_info:
+        hostname: "{{ vcenter_server }}"
+        username: "{{ vcenter_user }}"
+        password: "{{ vcenter_pass }}"
+        validate_certs: False
+        datacenter: "{{ vcenter_datacenter }}"
+        folder: "/{{ vcenter_datacenter }}/vm"
+        name: "{{ new_name }}"
+      register: new_template_facts
+      delegate_to: localhost
+
+    - set_fact:
+        guest_os: "{{ new_template_facts.instance.hw_guest_full_name }}"
+
+    - debug:
+        msg: "{{ guest_os }}"
+
+
     - include_role:
          name: clean_linux
       when: guest_os is search("Red Hat") or guest_os is search("CentOS")
@@ -108,27 +131,6 @@
     - include_role:
          name: clean_windows
       when: guest_os is search("Windows")
-
-### Connessione plugin vmware e esecuzione comandi sulla VM tramite vmware_tools
-    # - name: Add Connection Plugin vmware
-    #   add_host:
-    #     name: my_vmware
-    #     ansible_connection: vmware_tools
-    #     ansible_vmware_host: "{{ vcenter_server }}"
-    #     ansible_vmware_user: "{{ vcenter_user }}"
-    #     ansible_vmware_password: "{{ vcenter_pass }}"
-    #     ansible_vmware_validate_certs: no
-    #     ansible_vmware_guest_path: "{{ folder }}/{{ inventory_hostname }}"
-    #     ansible_vmware_tools_user: root
-    #     ansible_vmware_tools_password: C4mb14m1!
-
-    # - name: command via vmtools
-    #   delegate_to: my_vmware
-    #   command: ls -l 
-    #   register: cmdout
-
-    # - debug:
-    #     msg: "{{ cmdout }}"
 
 ### Spengo la vm 
     - name: Poweroff vm
