@@ -1,3 +1,4 @@
-## DEVO implementare il playbook che pulisce il template vmtools/playbook_vm_cmd.yml
-## Devo implementare il playbook che spegne il template e lo ritrasforma in template
+## DEVO implementare il ruolo windows che pulisce il template :
+	1: Rimozione proxy
+	2: ...
 
