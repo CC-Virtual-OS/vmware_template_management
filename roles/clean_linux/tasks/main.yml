@@ -4,6 +4,15 @@
 - name: Blanking /etc/hosts file
   shell: echo "127.0.0.1 localhost localhost.localdomain localhost4 localhost4.localdomain4" > /etc/hosts
 
+- name: Forcing unregister Satellite
+  command: {{ item }}
+  with_items:
+  - yum clean all
+  - subscription-manager clean
+  - subscription-manager remove --all
+  - subscription-manager unregister
+  - rpm -e `rpm -qa | grep -i kat`
+  - rm -rf /etc/rhsm/facts/katello.facts
 
 - name: Checking any existing route file
   find:
