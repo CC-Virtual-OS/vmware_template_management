@@ -4,15 +4,36 @@
 - name: Blanking /etc/hosts file
   shell: echo "127.0.0.1 localhost localhost.localdomain localhost4 localhost4.localdomain4" > /etc/hosts
 
+- name: unregister satellite.
+  redhat_subscription:
+    state: absent
+
 - name: Forcing unregister Satellite
-  command: {{ item }}
+  command: "{{ item }}"
   with_items:
-  - yum clean all
-  - subscription-manager clean
-  - subscription-manager remove --all
-  - subscription-manager unregister
-  - rpm -e `rpm -qa | grep -i kat`
-  - rm -rf /etc/rhsm/facts/katello.facts
+    - yum clean all
+    - subscription-manager clean
+    - subscription-manager remove --all
+  ignore_errors: yes
+  
+- name: Gather the rpm package facts
+  package_facts:
+    manager: auto
+
+- name: Search Katello package
+  set_fact:
+    katello_pkg:  "{{ ansible_facts.packages.keys() | select('search','katello') | list }}"
+        
+- name: Remove the Katello package if exists
+  yum:
+    name: "{{ katello_pkg[0] }}"
+    state: absent
+  when: katello_pkg|length > 0
+
+- name: Remove katello.facts file (delete file)
+  file:
+    path: /etc/rhsm/facts/katello.facts
+    state: absent
 
 - name: Checking any existing route file
   find:

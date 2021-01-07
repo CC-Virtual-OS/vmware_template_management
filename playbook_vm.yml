@@ -4,7 +4,7 @@
   gather_facts: False
   vars:
     # ansible_python_interpreter: "/usr/bin/env python3"
-    bkp_template_name: "{{ inventory_hostname }}-19102020-15-14"
+    bkp_template_name: "{{ inventory_hostname }}-15122020"
 
   tasks:
     - name: Recupero informazioni/facts del vecchio template

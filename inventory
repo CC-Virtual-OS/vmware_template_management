@@ -1,13 +1,11 @@
 [linux]
-# CENTOS72-X64-master vm_on_name=CC-CENTOS72-X64 new_name=CENTOS77-X64-master
-#2k19-x64-DC-master vm_on_name=WC-2K19-X64-DC new_name=2k19-x64-DC-master
-#2k16-x64-DC-master vm_on_name=WC-2K16-X64-DC new_name=2k16-x64-DC-master
-RH82-master vm_on_name=RC-RH82 new_name=RH82-master
+#CENTOS72-X64-master    vm_on_name=CC-CENTOS72-X64  new_name=CENTOS77-X64-master
+RH511-DB10-MASTER             vm_on_name=RC-RH511-DB10          new_name=RH511-DB10-MASTER
 [linux:vars]
 vcenter_server="vcpodarea3.lottomatica.net"
 vcenter_user="virtosadmin"
 vcenter_pass="Password10"
 vcenter_datacenter="FARM-AREA3"
 cluster_name="AREA3 GENERIC"
-datastore_name="CROSS_MASTER_XtremIO-I_252"
-note_update="19-10-2020: Installato nfs-utils"
+datastore_name="NFS_CROSS_MASTER"
+note_update="28-12-2020: Patch DBA"
