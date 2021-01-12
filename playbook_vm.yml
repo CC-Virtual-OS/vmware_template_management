@@ -1,5 +1,5 @@
 ---
-- name: Find folder path of an existing virtual machine
+- name: Close Template after update/patching
   hosts: linux
   gather_facts: False
   vars:

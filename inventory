@@ -1,6 +1,10 @@
 [linux]
 #CENTOS72-X64-master    vm_on_name=CC-CENTOS72-X64  new_name=CENTOS77-X64-master
 RH511-DB10-MASTER             vm_on_name=RC-RH511-DB10          new_name=RH511-DB10-MASTER
+
+[templates]
+RH76-master
+
 [linux:vars]
 vcenter_server="vcpodarea3.lottomatica.net"
 vcenter_user="virtosadmin"
@@ -9,3 +13,13 @@ vcenter_datacenter="FARM-AREA3"
 cluster_name="AREA3 GENERIC"
 datastore_name="NFS_CROSS_MASTER"
 note_update="28-12-2020: Patch DBA"
+
+[templates:vars]
+vcenter_server="vcpodarea3.lottomatica.net"
+vcenter_user="virtosadmin"
+vcenter_pass="Password10"
+vcenter_datacenter="FARM-AREA3"
+cluster_name="AREA3 GENERIC"
+esxi_name="podarea3esx01.lottomatica.net"
+datastore_name="NFS_CROSS_MASTER"
+portgroup_name='345 - 172.26.252.160%2f27 - Virtual-OS-Templates'

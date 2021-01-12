@@ -1,0 +1,81 @@
+- name: Close Template after update/patching
+  hosts: templates
+  gather_facts: False
+  vars:
+
+  tasks:
+    - name: Recupero informazioni/facts del template
+      vmware_guest_info:
+        hostname: "{{ vcenter_server }}"
+        username: "{{ vcenter_user }}"
+        password: "{{ vcenter_pass }}"
+        validate_certs: False
+        datacenter: "{{ vcenter_datacenter }}"
+        folder: "/{{ vcenter_datacenter }}/vm"
+        name: "{{ inventory_hostname }}"
+      register: template_facts
+      delegate_to: localhost
+
+    - set_fact:
+        tmpl_open_name: "RC-{{ inventory_hostname.split('-master')[0] }}"
+        folder: "{{ template_facts.instance.hw_folder }}"
+
+    - name: Chek if open tmpl already exists
+      vmware_guest_info:
+        hostname: "{{ vcenter_server }}"
+        username: "{{ vcenter_user }}"
+        password: "{{ vcenter_pass }}"
+        validate_certs: False
+        datacenter: "{{ vcenter_datacenter }}"
+        folder: "/{{ vcenter_datacenter }}/vm"
+        name: "{{ tmpl_open_name }}"
+      register: check_tmpl_open
+      ignore_errors: True
+      delegate_to: localhost
+
+    - debug:
+        msg: "ATTENZIONE IL TMPL {{ inventory_hostname }} SEMBRA ESSERE GIà APERTO !"
+      when: check_tmpl_open is succeeded
+
+    - meta: end_play
+      when: check_tmpl_open is succeeded
+
+
+    - name: Cloning Template 
+      vmware_guest:
+        hostname: "{{ vcenter_server }}" 
+        username: "{{ vcenter_user }}"
+        password: "{{ vcenter_pass }}" 
+        validate_certs: False
+        name: "{{ tmpl_open_name }}"
+        template: "{{ inventory_hostname }}" 
+        datacenter: "{{ vcenter_datacenter }}"
+        folder: "{{ folder }}"
+        cluster: "{{ cluster_name }}"
+        datastore: "{{ datastore_name }}"
+        state: poweredon
+        convert: thin
+        networks:
+          - name: "{{ portgroup_name }}"
+            start_connected: True
+            type: static
+            ip: "172.26.252.167"
+            netmask: "255.255.255.224"
+            gateway: "172.26.252.161"
+        wait_for_ip_address: yes
+      delegate_to: localhost
+      register: vm_facts 
+
+    - name: Adding host to inventory
+      add_host:
+        hostname: "{{ vm_facts.instance.ipv4 }}"
+        groups: just_parsed
+        host_capsule: rp-capsule-prod-ita.lottomatica.net 
+        ip_capsule: 10.4.9.189 
+        key: key-prod-ita 
+        org: MYIGT
+
+    - debug:
+        msg: "{{ vm_facts.instance.ipv4 }}"
+    
+- import_playbook: ../Satellite/registration.yaml
